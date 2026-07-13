@@ -1,0 +1,6 @@
+moviepy>=1.0.3
+openai-whisper
+python-docx
+tqdm
+torch
+deep-translator
