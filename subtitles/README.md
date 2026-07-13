@@ -31,16 +31,40 @@ python subtitles/generate_en.py
 ```
 
 **Funcionamento:**
-- Processa todos os vídeos em `videos/`
-- Whisper traduz PT → EN automaticamente
-- Gera `.vtt` em `subtitles/outputs/`
+- ✅ Processa todos os vídeos em `videos/` ou diretório especificado
+- ✅ Whisper traduz PT → EN automaticamente
+- ✅ Gera `.vtt` em `subtitles/outputs/`
+- ✅ **Tratamento robusto de erros** - continua o lote mesmo se um vídeo falhar
+- ✅ **Skip de arquivos existentes** - reprocessa apenas vídeos novos
+- ✅ **Log de erros** - registra falhas em `errors.log`
+- ✅ **Progress bar com tqdm** - ETA, velocidade média e resumo final
+- ✅ **Estatísticas detalhadas** - sucessos, falhas, tempo médio por vídeo
 
-**Output:**
+**CLI completo:**
+```bash
+python subtitles/generate_en.py \
+  --input-dir videos \
+  --output-dir subtitles/outputs \
+  --model medium \
+  --pattern "aula-*.mp4" \
+  --skip-existing
+```
+
+**Opções disponíveis:**
+- `--input-dir DIR`: diretório com vídeos de entrada (padrão: `videos/`)
+- `--output-dir DIR`: diretório de saída das legendas (padrão: `subtitles/outputs/`)
+- `--model MODEL`: modelo Whisper - tiny, base, small, medium, large (padrão: `medium`)
+- `--pattern PATTERN`: filtra arquivos por padrão glob, ex: `"aula-*.mp4"` ou `"*.mp4"`
+- `--skip-existing`: pula arquivos cujo `.vtt` já exista (recomendado para lotes grandes)
+- `--force`: reprocessa todos os arquivos, ignorando `--skip-existing`
+
+**Output gerado:**
 ```
 subtitles/outputs/
 ├── aula-01.vtt
 ├── aula-02.vtt
-└── tutorial.vtt
+├── tutorial.vtt
+└── errors.log        # Log de vídeos que falharam (se houver)
 ```
 
 #### Legendas em Espanhol
@@ -49,16 +73,29 @@ python subtitles/generate_es.py
 ```
 
 **Funcionamento:**
-- Transcreve vídeos em português
-- Traduz cada segmento PT → ES via GoogleTranslator
-- Gera `.vtt` com sufixo `_es` em `subtitles/outputs/`
+- ✅ Transcreve vídeos em português
+- ✅ Traduz cada segmento PT → ES via GoogleTranslator
+- ✅ Gera `.vtt` com sufixo `_es` em `subtitles/outputs/`
+- ✅ **Fallback inteligente** - se tradução falhar, usa texto original
+- ✅ **Mesmas opções CLI** do `generate_en.py`
+- ✅ **Log de erros** em `errors_es.log`
 
-**Output:**
+**CLI disponível:**
+```bash
+python subtitles/generate_es.py \
+  --input-dir videos \
+  --output-dir subtitles/outputs \
+  --model medium \
+  --skip-existing
+```
+
+**Output gerado:**
 ```
 subtitles/outputs/
 ├── aula-01_es.vtt
 ├── aula-02_es.vtt
-└── tutorial_es.vtt
+├── tutorial_es.vtt
+└── errors_es.log     # Log de falhas (se houver)
 ```
 
 ## 📂 Estrutura de Output
@@ -68,7 +105,9 @@ subtitles/outputs/
 ├── video1.vtt         # Legenda em inglês
 ├── video1_es.vtt      # Legenda em espanhol
 ├── video2.vtt
-└── video2_es.vtt
+├── video2_es.vtt
+├── errors.log         # Falhas do generate_en.py (se houver)
+└── errors_es.log      # Falhas do generate_es.py (se houver)
 ```
 
 ## 🔄 Diferenças entre os Scripts
@@ -108,12 +147,14 @@ First, let's understand what Terraform is.
 
 ### Alterar Modelo Whisper
 
-Edite o script e modifique:
-```python
-from shared.config import DEFAULT_MODEL
+Agora via CLI:
+```bash
+python subtitles/generate_en.py --model small
+```
 
-# Ou diretamente no código:
-model = whisper.load_model("small")  # tiny, base, small, medium, large, turbo
+Ou ajuste o padrão em `shared/config.py`:
+```python
+DEFAULT_MODEL = "medium"
 ```
 
 ### Personalizar Prompt
@@ -155,29 +196,39 @@ result = model.transcribe(
 
 ## 🎨 Exemplos de Uso
 
-### Processar apenas um vídeo
-
-Modifique temporariamente o script:
-```python
-# No início do script
-arquivos = [Path("videos/meu_video.mp4")]
+### Processar todos os vídeos (primeira vez)
+```bash
+python subtitles/generate_en.py
 ```
 
-### Processar apenas .mp4
-```python
-arquivos = [f for f in input_dir.iterdir() if f.suffix.lower() == '.mp4']
+### Processar apenas vídeos novos (lote incremental - RECOMENDADO)
+```bash
+python subtitles/generate_en.py --skip-existing
 ```
 
-### Adicionar mais idiomas
+### Processar apenas arquivos específicos
+```bash
+# Processar apenas arquivos começando com "aula-"
+python subtitles/generate_en.py --pattern "aula-*.mp4"
 
-Crie um novo script `generate_fr.py` (francês):
-```python
-result = model.transcribe(
-    str(file_path),
-    task="translate",  # Se Whisper suporta tradução para FR
-    target_language="fr",
-    # ...
-)
+# Processar apenas .mp4
+python subtitles/generate_en.py --pattern "*.mp4" --skip-existing
+```
+
+### Reprocessar tudo com outro modelo
+```bash
+python subtitles/generate_en.py --model small --force
+```
+
+### Usar diretórios personalizados
+```bash
+python subtitles/generate_en.py --input-dir meus-videos --output-dir minhas-legendas
+```
+
+### Processar 200 vídeos com resumo
+```bash
+# Modelo mais rápido para lotes grandes
+python subtitles/generate_en.py --model small --skip-existing
 ```
 
 ## ⚠️ Troubleshooting
@@ -186,26 +237,24 @@ result = model.transcribe(
 Certifique-se de que:
 1. A pasta `videos/` existe
 2. Há arquivos com extensões válidas
-
-### Erro: "deep_translator not found" (generate_es.py)
-```bash
-pip install deep-translator
-```
+3. O filtro `--pattern` corresponde aos arquivos esperados
 
 ### Legendas fora de sincronia
 1. Verifique a qualidade do áudio original
-2. Use modelo maior: `model = whisper.load_model("large")`
+2. Use modelo maior: `python subtitles/generate_en.py --model large`
 3. Áudios com muito ruído podem afetar a sincronização
-
-### Tradução ruim (generate_es.py)
-1. Tradutor online pode ter limitações
-2. Considere usar uma API de tradução premium
-3. Ou gere em inglês e traduza manualmente depois
 
 ### Script muito lento
 1. **Use GPU**: Verifique se CUDA/MPS está disponível
 2. **Modelo menor**: Use `small` ou `base`
 3. **generate_en.py**: Mais rápido que generate_es.py
+
+### Falhas durante o lote
+Ambos os scripts registram erros e continuam processando:
+- `generate_en.py` → `subtitles/outputs/errors.log`
+- `generate_es.py` → `subtitles/outputs/errors_es.log`
+
+Para ver estatísticas, basta executar novamente - scripts sempre mostram resumo final.
 
 ### Sem conexão à internet (generate_es.py)
 `generate_es.py` requer internet para GoogleTranslator.  
@@ -221,23 +270,34 @@ Use `generate_en.py` que funciona offline.
 
 ## 💡 Dicas
 
-### 1. Processamento em Lote
-Os scripts processam **automaticamente** todos os vídeos da pasta:
+### 1. Processamento em Lote de 200+ vídeos
+**Sempre use `--skip-existing`** para evitar reprocessamento:
 ```bash
-python subtitles/generate_en.py  # Processa tudo de uma vez
+python subtitles/generate_en.py --skip-existing
 ```
+Se o script for interrompido, basta executar novamente - ele continua de onde parou!
 
-### 2. Monitoramento
-Use `tqdm` para ver o progresso:
-```
-Processando vídeos: 2/5 [████████          ] 40%
-```
+### 2. Monitoramento em Tempo Real
+Progress bar com `tqdm` mostra:
+- Vídeos processados / total
+- ETA (tempo estimado restante)
+- Velocidade (vídeos/hora)
+- Status de cada vídeo
 
 ### 3. Organização
 Mantenha vídeos originais em `videos/` e legendas em `subtitles/outputs/`
 
-### 4. Backup
-Faça backup das legendas geradas antes de reprocessar.
+### 4. Recuperação de Falhas
+Se um vídeo falhar:
+1. O script continua com os demais
+2. Falha é registrada em `errors.log` ou `errors_es.log`
+3. Use `--force` para reprocessar apenas os que falharam
+
+### 5. Performance em Lotes Grandes
+Para 200 vídeos de 10 min cada:
+- **GPU**: 2-4 horas (generate_en.py) | 6-10 horas (generate_es.py)
+- **CPU**: 20-40 horas (generate_en.py) | 60-100 horas (generate_es.py)
+- **Recomendado**: Use modelo `small` para velocidade ou `medium` para qualidade
 
 ## 📖 Exemplos de Workflow
 
@@ -247,7 +307,7 @@ Faça backup das legendas geradas antes de reprocessar.
 cp ~/Downloads/*.mp4 videos/
 
 # 2. Gerar legendas em inglês
-python subtitles/generate_en.py
+python subtitles/generate_en.py --skip-existing
 
 # 3. Gerar legendas em espanhol
 python subtitles/generate_es.py

@@ -1,0 +1,1 @@
+2026-07-13 00:06:02,919 | ERROR | Dependência ausente ao iniciar generate_es.py: No module named 'whisper'
