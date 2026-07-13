@@ -13,7 +13,23 @@ Este módulo processa **todos os vídeos** da pasta `videos/` e gera legendas au
 
 ## 📦 Uso
 
-### 1. Preparar Vídeos
+### Opção 1: Apontar diretório (RECOMENDADO)
+
+**Não precisa mover vídeos!** Aponte direto para o diretório:
+
+```bash
+# Inglês
+python subtitles/generate_en.py \
+  --input-dir /caminho/para/seus/videos \
+  --skip-existing
+
+# Espanhol
+python subtitles/generate_es.py \
+  --input-dir ~/Downloads/aulas \
+  --skip-existing
+```
+
+### Opção 2: Usar pasta padrão `videos/`
 
 Coloque seus vídeos na pasta `videos/`:
 ```bash
@@ -23,7 +39,14 @@ videos/
 └── tutorial.mov
 ```
 
-### 2. Gerar Legendas
+Depois execute sem argumentos:
+```bash
+python subtitles/generate_en.py --skip-existing
+```
+
+---
+
+### Detalhes dos Scripts
 
 #### Legendas em Inglês
 ```bash
@@ -220,15 +243,36 @@ python subtitles/generate_en.py --pattern "*.mp4" --skip-existing
 python subtitles/generate_en.py --model small --force
 ```
 
-### Usar diretórios personalizados
+### Usar diretórios personalizados (RECOMENDADO - não precisa mover vídeos!)
 ```bash
-python subtitles/generate_en.py --input-dir meus-videos --output-dir minhas-legendas
+# Apontar para qualquer diretório - não precisa copiar vídeos para videos/
+python subtitles/generate_en.py \
+  --input-dir /caminho/completo/para/seus/videos \
+  --output-dir /onde/salvar/legendas \
+  --skip-existing
+
+# Exemplo prático
+python subtitles/generate_en.py \
+  --input-dir ~/Downloads/aulas-kubernetes \
+  --output-dir ~/Desktop/legendas \
+  --skip-existing
+
+# Ou usar caminhos relativos
+python subtitles/generate_en.py \
+  --input-dir ../meus-videos \
+  --skip-existing
 ```
 
 ### Processar 200 vídeos com resumo
 ```bash
 # Modelo mais rápido para lotes grandes
 python subtitles/generate_en.py --model small --skip-existing
+
+# Ou apontando direto para o diretório dos vídeos
+python subtitles/generate_en.py \
+  --input-dir /Volumes/HD-Externo/videos-curso \
+  --model small \
+  --skip-existing
 ```
 
 ## ⚠️ Troubleshooting
