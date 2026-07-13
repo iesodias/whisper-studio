@@ -18,16 +18,25 @@ Este módulo processa **todos os vídeos** da pasta `videos/` e gera legendas au
 **Não precisa mover vídeos!** Aponte direto para o diretório:
 
 ```bash
-# Inglês
+# Inglês - output padrão em subtitles/outputs/
 python subtitles/generate_en.py \
   --input-dir /caminho/para/seus/videos \
   --skip-existing
 
-# Espanhol
-python subtitles/generate_es.py \
+# Ou salvar legendas JUNTO com os vídeos
+python subtitles/generate_en.py \
   --input-dir ~/Downloads/aulas \
+  --output-dir ~/Downloads/aulas \
+  --skip-existing
+
+# Ou em local separado
+python subtitles/generate_en.py \
+  --input-dir /Volumes/HD-Externo/videos \
+  --output-dir ~/Desktop/legendas-prontas \
   --skip-existing
 ```
+
+**Padrão:** Se você **não** especificar `--output-dir`, as legendas vão para `subtitles/outputs/` (independente de onde estão os vídeos).
 
 ### Opção 2: Usar pasta padrão `videos/`
 
@@ -222,11 +231,38 @@ result = model.transcribe(
 ### Processar todos os vídeos (primeira vez)
 ```bash
 python subtitles/generate_en.py
+# Output: subtitles/outputs/
 ```
 
 ### Processar apenas vídeos novos (lote incremental - RECOMENDADO)
 ```bash
 python subtitles/generate_en.py --skip-existing
+```
+
+### Vídeos em outro lugar, output padrão
+```bash
+# Vídeos: ~/Downloads/aulas/
+# Output:  subtitles/outputs/
+python subtitles/generate_en.py --input-dir ~/Downloads/aulas --skip-existing
+```
+
+### Salvar legendas JUNTO com os vídeos
+```bash
+# Vídeos e legendas no mesmo diretório
+python subtitles/generate_en.py \
+  --input-dir ~/Downloads/aulas \
+  --output-dir ~/Downloads/aulas \
+  --skip-existing
+```
+
+### Output em local separado
+```bash
+# Vídeos: /Volumes/HD-Externo/videos/
+# Output:  ~/Desktop/legendas-prontas/
+python subtitles/generate_en.py \
+  --input-dir /Volumes/HD-Externo/videos \
+  --output-dir ~/Desktop/legendas-prontas \
+  --skip-existing
 ```
 
 ### Processar apenas arquivos específicos
