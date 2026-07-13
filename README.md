@@ -5,43 +5,55 @@ Sistema para transcrição de áudio/vídeo em texto e geração de legendas usa
 ## Estrutura do Projeto
 
 ```
-transcricao_audio_video/
-├── transcription/          # Transcrição (áudio/vídeo → DOCX)
+whisper-studio/              # ← Raiz do projeto
+├── venv/                    # ← Criar ambiente virtual aqui (não commitar)
+├── transcription/           # Transcrição (áudio/vídeo → DOCX)
 │   ├── transcribe.py
 │   ├── outputs/
 │   └── README.md
-├── subtitles/              # Legendagem (vídeos → VTT)
-│   ├── generate_en.py      # PT → EN
-│   ├── generate_es.py      # PT → ES
+├── subtitles/               # Legendagem (vídeos → VTT)
+│   ├── generate_en.py       # PT → EN
+│   ├── generate_es.py       # PT → ES
 │   ├── outputs/
 │   └── README.md
-├── shared/                 # Código compartilhado
+├── shared/                  # Código compartilhado
 │   ├── utils/
 │   │   └── file_detector.py
 │   └── config.py
 ├── tests/
 │   └── test_file_detection.py
-├── videos/                 # Vídeos de entrada
-└── requirements.txt
+├── videos/                  # Vídeos de entrada
+├── requirements.txt
+└── .gitignore
 ```
 
 ## Instalação
 
-### 1. Criar ambiente virtual
+### 1. Clonar o repositório
 
 ```bash
+git clone https://github.com/iesodias/whisper-studio.git
+cd whisper-studio
+```
+
+### 2. Criar ambiente virtual (na raiz do projeto)
+
+```bash
+# Criar venv na raiz
 python -m venv venv
+
+# Ativar o ambiente
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 ```
 
-### 2. Instalar dependências
+### 3. Instalar dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Instalar ffmpeg
+### 4. Instalar ffmpeg
 
 **Mac:**
 ```bash
@@ -57,6 +69,12 @@ sudo apt update && sudo apt install ffmpeg
 Baixar de https://ffmpeg.org/download.html
 
 ## Uso
+
+**IMPORTANTE:** Sempre ative o ambiente virtual antes de usar:
+```bash
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+```
 
 ### Transcrição
 
